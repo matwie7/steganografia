@@ -8,11 +8,11 @@
 public class Configuration {
 
 	private static Configuration configuration;
-	private int rBitsAmount;
-	private int gBitsAmount;
-	private int bBitsAmount;
+	private byte rBitsAmount;
+	private byte gBitsAmount;
+	private byte bBitsAmount;
 
-	private Configuration(int rBitsAmount, int gBitsAmount, int bBitsAmount) {
+	private Configuration(byte rBitsAmount, byte gBitsAmount, byte bBitsAmount) {
 		this.rBitsAmount = rBitsAmount;
 		this.gBitsAmount = gBitsAmount;
 		this.bBitsAmount = bBitsAmount;
@@ -28,34 +28,34 @@ public class Configuration {
 		return configuration;
 	}
 
-	public static Configuration create(int rBitsAmount, int gBitsAmount, int bBitsAmount) {
+	public static Configuration create(byte rBitsAmount, byte gBitsAmount, byte bBitsAmount) {
 		if (configuration == null) {
 			configuration = new Configuration(rBitsAmount, gBitsAmount, bBitsAmount);
 		}
 		return configuration;
 	}
 
-	public int getRBitsAmount() {
+	public byte getRBitsAmount() {
 		return rBitsAmount;
 	}
 
-	public void setRBitsAmount(int rBitsAmount) {
+	public void setRBitsAmount(byte rBitsAmount) {
 		this.rBitsAmount = rBitsAmount;
 	}
 
-	public int getGBitsAmount() {
+	public byte getGBitsAmount() {
 		return gBitsAmount;
 	}
 
-	public void setGBitsAmount(int gBitsAmount) {
+	public void setGBitsAmount(byte gBitsAmount) {
 		this.gBitsAmount = gBitsAmount;
 	}
 
-	public int getBBitsAmount() {
+	public byte getBBitsAmount() {
 		return bBitsAmount;
 	}
 
-	public void setBBitsAmount(int bBitsAmount) {
+	public void setBBitsAmount(byte bBitsAmount) {
 		this.bBitsAmount = bBitsAmount;
 	}
 

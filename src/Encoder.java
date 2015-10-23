@@ -6,32 +6,42 @@ import java.util.BitSet;
 
 import javax.imageio.ImageIO;
 
-public class Enigma {
-	public static void enigmate(final String bitmapFilePath, final String fileToHidePath) {
-		Configuration configuration = Configuration.create(2, 2, 2);
+import org.apache.commons.lang3.ArrayUtils;
+
+public class Encoder {
+	public static void encode(final String bitmapFilePath, final String inputFilePath) {
+		//mock
+		Configuration configuration = Configuration.create((byte) 2, (byte) 2, (byte) 2);
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(bitmapFilePath);
-		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(fileToHidePath);
+		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(inputFilePath);
 
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
 		int counter = 0;
-		byte[] aaaa = new byte[(int) Checkers.getSizeOfInputFileInBytes(fileToHidePath)];
+		int inputFileLength = (int) Checkers.getSizeOfInputFileInBytes(inputFilePath);
+		byte[] inputArray = new byte[inputFileLength];
 
 		try {
-			dataInputStream.readFully(aaaa);
+			dataInputStream.readFully(inputArray);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		BitSet input = BitSet.valueOf(aaaa);
-		System.out.println(input.toString());
+		// udzia³ bitów w poszczególnych sk³adowych
+		byte[] RGBContribution = new byte[] { configuration.getRBitsAmount(), configuration.getGBitsAmount(),
+				configuration.getBBitsAmount() };
+		// d³ugoœæ pliku wejœciowego
+		byte[] inputFileLengtInBytes = Common.intToByteArray(inputFileLength);
+
+		BitSet input = BitSet.valueOf(ArrayUtils.addAll(RGBContribution,
+				// 01010101 - ten znak bêdzie oznaczaæ, ¿e w tym obrazku jest
+				// coœ ukryte
+				ArrayUtils.addAll(new byte[] { (byte) 0b01010101 },
+						ArrayUtils.addAll(inputFileLengtInBytes, inputArray))));
 
 		outerLoop: for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				int rgb = bufferedImage.getRGB(x, y);
-
-				String aaa = Integer.toBinaryString(rgb);
-				System.out.println("pixel before: " + aaa);
 
 				for (int iR = 0; iR < configuration.getRBitsAmount(); iR++)
 					rgb = setR(rgb, iR, input.get(counter++));
@@ -42,10 +52,6 @@ public class Enigma {
 				for (int iB = 0; iB < configuration.getBBitsAmount(); iB++)
 					rgb = setB(rgb, iB, input.get(counter++));
 
-				aaa = Integer.toBinaryString(rgb);
-				System.out.println("pixel after : " + aaa);
-				System.out.println(counter);
-
 				bufferedImage.setRGB(x, y, rgb);
 
 				if (input.length() < counter)
@@ -55,38 +61,23 @@ public class Enigma {
 		System.out.println(Checkers.getTotalFreeKilobytesInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
 				configuration));
 
-		File outputfile = new File(bitmapFilePath + "2");
-		try {
-			ImageIO.write(bufferedImage, "bmp", outputfile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println(Checkers.getSizeOfInputFileInBytes(fileToHidePath));
-		System.out.println();
-	}
-
-	public static void unenigmate(final String inputFilePath, final String outputFilePath) {
-
+		FileReaderWriter.saveImage(bufferedImage, bitmapFilePath);
 	}
 
 	private static int setR(int rgb, int RBit, boolean inputBit) {
-		BitSet bitSet = new BitSet();
-		bitSet = BitSet.valueOf(new long[] { rgb });
+		BitSet bitSet = Common.intToBitSet(rgb);
 		bitSet.set(16 + RBit, inputBit);
 		return (int) bitSet.toLongArray()[0];
 	}
 
 	private static int setG(int rgb, int GBit, boolean inputBit) {
-		BitSet bitSet = new BitSet();
-		bitSet = BitSet.valueOf(new long[] { rgb });
+		BitSet bitSet = Common.intToBitSet(rgb);
 		bitSet.set(8 + GBit, inputBit);
 		return (int) bitSet.toLongArray()[0];
 	}
 
 	private static int setB(int rgb, int BBit, boolean inputBit) {
-		BitSet bitSet = new BitSet();
-		bitSet = BitSet.valueOf(new long[] { rgb });
+		BitSet bitSet = Common.intToBitSet(rgb);
 		bitSet.set(0 + BBit, inputBit);
 		return (int) bitSet.toLongArray()[0];
 	}

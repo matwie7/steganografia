@@ -34,4 +34,13 @@ public class FileReaderWriter {
 		}
 		return dataInputStream;
 	}
+
+	public static void saveImage(BufferedImage bufferedImage, String bitmapFilePath) {
+		File outputfile = new File(bitmapFilePath + "2");
+		try {
+			ImageIO.write(bufferedImage, "bmp", outputfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
