@@ -1,10 +1,3 @@
-/**
- * Klasa s³u¿¹ca do przechowywania konfiguracji. Zastosowanu to wzorzec
- * projektowy Singleton (mo¿e istnieæ jedna instancja tej klasy)
- * 
- * @author Mateusz Wiêcek
- *
- */
 public class Configuration {
 
 	private static Configuration configuration;
@@ -39,27 +32,42 @@ public class Configuration {
 		return rBitsAmount;
 	}
 
-	public void setRBitsAmount(byte rBitsAmount) {
+	public Configuration setRBitsAmount(byte rBitsAmount) {
+		validateRGB(rBitsAmount);
 		this.rBitsAmount = rBitsAmount;
+		return configuration;
+	}
+
+	private void validateRGB(byte bitsAmount) {
+		if (bitsAmount < 0 || bitsAmount > 8)
+			throw new RuntimeException("Illegal parameter");
 	}
 
 	public byte getGBitsAmount() {
 		return gBitsAmount;
 	}
 
-	public void setGBitsAmount(byte gBitsAmount) {
+	public Configuration setGBitsAmount(byte gBitsAmount) {
+		validateRGB(gBitsAmount);
 		this.gBitsAmount = gBitsAmount;
+		return configuration;
 	}
 
 	public byte getBBitsAmount() {
 		return bBitsAmount;
 	}
 
-	public void setBBitsAmount(byte bBitsAmount) {
+	public Configuration setBBitsAmount(byte bBitsAmount) {
+		validateRGB(bBitsAmount);
 		this.bBitsAmount = bBitsAmount;
+		return configuration;
 	}
 
 	public int getBitsPerPixel() {
 		return rBitsAmount + gBitsAmount + bBitsAmount;
+	}
+
+	public byte[] getRGBContribution() {
+		return new byte[] { rBitsAmount, gBitsAmount, bBitsAmount };
 	}
 }

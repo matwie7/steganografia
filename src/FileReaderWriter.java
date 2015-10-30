@@ -1,9 +1,11 @@
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 
@@ -11,28 +13,21 @@ import javax.imageio.ImageIO;
 
 public class FileReaderWriter {
 	public static BufferedImage openBitmapFromFile(final String bitmapFilePath) {
-		BufferedImage bitmap = null;
-
 		try {
-			bitmap = ImageIO.read(new File(bitmapFilePath));
-			System.out.println();
+			return ImageIO.read(new File(bitmapFilePath));
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(MessageFormat.format("File under {0} cannot be opened", bitmapFilePath));
 		}
-		return bitmap;
 	}
 
 	public static DataInputStream openFileToHide(final String fileToHidePath) {
-		DataInputStream dataInputStream = null;
 		try {
-			dataInputStream = new DataInputStream(
-					new BufferedInputStream(new FileInputStream(new File(fileToHidePath))));
+			return new DataInputStream(new BufferedInputStream(new FileInputStream(new File(fileToHidePath))));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new RuntimeException(MessageFormat.format("File under {0} cannot be found", fileToHidePath));
 		}
-		return dataInputStream;
 	}
 
 	public static void saveImage(BufferedImage bufferedImage, String bitmapFilePath) {
@@ -41,6 +36,15 @@ public class FileReaderWriter {
 			ImageIO.write(bufferedImage, "bmp", outputfile);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public static DataOutputStream createDataOutputStream(String outputFilePath) {
+		try {
+			return new DataOutputStream(new FileOutputStream(outputFilePath));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Output Stream cound not be created");
 		}
 	}
 }
