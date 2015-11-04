@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -39,12 +40,24 @@ public class FileReaderWriter {
 		}
 	}
 
-	public static DataOutputStream createDataOutputStream(String outputFilePath) {
+	private static DataOutputStream createDataOutputStream(String outputFilePath) {
 		try {
 			return new DataOutputStream(new FileOutputStream(outputFilePath));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Output Stream cound not be created");
+		}
+	}
+	
+	public static void saveDecodedData(String outputFilePath, List<Boolean> outputDataArray){
+		DataOutputStream dataOutputStream = createDataOutputStream(outputFilePath);
+		if (outputDataArray.size() % 8 != 0)
+			throw new RuntimeException("Wrong data length");
+		
+		try {
+			dataOutputStream.write(Common.toByteArray(outputDataArray));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

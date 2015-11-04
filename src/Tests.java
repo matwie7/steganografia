@@ -1,8 +1,11 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class Tests {
@@ -35,5 +38,14 @@ public class Tests {
 			exception = e;
 		}
 		assertNotNull(exception);
+	}
+
+	@Test
+	public void listToArrayTest() {
+		ArrayList<Boolean> bools = new ArrayList<>(Arrays.asList(true, true, false, true, false, true, false, true));
+		byte[] expectedBits = new byte[] { -43 };
+		byte[] bits = Common.toByteArray(bools);
+		
+		Assert.assertArrayEquals(expectedBits, bits);
 	}
 }

@@ -70,4 +70,24 @@ public class Configuration {
 	public byte[] getRGBContribution() {
 		return new byte[] { rBitsAmount, gBitsAmount, bBitsAmount };
 	}
+
+	public byte getRMask() {
+		return getMask(rBitsAmount);
+	}
+
+	public byte getGMask() {
+		return getMask(gBitsAmount);
+	}
+
+	public byte getBMask() {
+		return getMask(bBitsAmount);
+	}
+
+	private static byte getMask(byte n) {
+		byte mask = 0;
+		for (int i = 0; i < n; i++)
+			mask += Math.pow(2, i);
+
+		return mask;
+	}
 }

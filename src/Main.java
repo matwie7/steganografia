@@ -6,6 +6,6 @@ public class Main {
 		Configuration configuration = Configuration.create((byte) 3, (byte) 4, (byte) 5);
 		
 		Encoder.encode(bitmapFilePath, fileToHidePath, configuration);
-		Decoder.decode(bitmapFilePath+"2", "c:\\Android\\aaa.aaa");
+		Decoder.decode(bitmapFilePath+"2", "c:\\Android\\aaa.txt");
 	}
 }

@@ -14,7 +14,6 @@ public class Encoder {
 
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
-		int counter = 0;
 		int inputFileLength = (int) Checkers.getSizeOfInputFileInBytes(inputFilePath);
 		byte[] inputArray = new byte[inputFileLength];
 
@@ -28,7 +27,9 @@ public class Encoder {
 		// d³ugoœæ pliku wejœciowego
 		byte[] inputFileLengtInBytes = Common.intToByteArray(inputFileLength);
 
-		BitSet input = BitSet.valueOf(ArrayUtils.addAll(inputFileLengtInBytes, inputArray));
+		List<Boolean> validInput = Common
+				.bitSetToValidListOfBoolean(BitSet.valueOf(ArrayUtils.addAll(inputFileLengtInBytes, inputArray)));
+		int counter = 0;
 
 		outerLoop: for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
@@ -36,19 +37,22 @@ public class Encoder {
 					continue;
 				int rgb = bufferedImage.getRGB(x, y);
 
-				for (int iR = 0; iR < configuration.getRBitsAmount(); iR++)
-					rgb = setR(rgb, iR, input.get(counter++));
-
-				for (int iG = 0; iG < configuration.getGBitsAmount(); iG++)
-					rgb = setG(rgb, iG, input.get(counter++));
-
-				for (int iB = 0; iB < configuration.getBBitsAmount(); iB++)
-					rgb = setB(rgb, iB, input.get(counter++));
-
+				for (int iR = configuration.getRBitsAmount() - 1; iR >= 0; iR--) {
+					rgb = setR(rgb, iR, validInput.get(counter++));
+					if (validInput.size() == counter)
+						break outerLoop;
+				}
+				for (int iG = configuration.getGBitsAmount() - 1; iG >= 0; iG--) {
+					rgb = setG(rgb, iG, validInput.get(counter++));
+					if (validInput.size() == counter)
+						break outerLoop;
+				}
+				for (int iB = configuration.getBBitsAmount() - 1; iB >= 0; iB--) {
+					rgb = setB(rgb, iB, validInput.get(counter++));
+					if (validInput.size() == counter)
+						break outerLoop;
+				}
 				bufferedImage.setRGB(x, y, rgb);
-
-				if (input.length() < counter)
-					break outerLoop;
 			}
 		}
 		System.out.println(Checkers.getTotalFreeKilobytesInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
@@ -63,13 +67,13 @@ public class Encoder {
 			int rgb = bufferedImage.getRGB(i, 0);
 			BitSet input = BitSet.valueOf(new byte[] { RGBcontribution[i] });
 			List<Boolean> inputWithPadding = new ArrayList<Boolean>();
-			
-			for(int j = 7; j >= 0; j--){
+
+			for (int j = 7; j >= 0; j--)
 				if (input.length() > j)
 					inputWithPadding.add(input.get(j));
-				else inputWithPadding.add(false);
-			}
-			
+				else
+					inputWithPadding.add(false);
+
 			int counter = 0;
 			for (int iR = 1; iR >= 0; iR--)
 				rgb = setR(rgb, iR, inputWithPadding.get(counter++));
@@ -79,7 +83,6 @@ public class Encoder {
 
 			for (int iB = 2; iB >= 0; iB--)
 				rgb = setB(rgb, iB, inputWithPadding.get(counter++));
-//			System.out.println(Integer.toBinaryString(rgb));
 			bufferedImage.setRGB(i, 0, rgb);
 		}
 	}

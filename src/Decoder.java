@@ -1,12 +1,47 @@
 import java.awt.image.BufferedImage;
-import java.io.DataOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Decoder {
 	public static void decode(final String inputFilePath, final String outputFilePath) {
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(inputFilePath);
 		Configuration configuration = loadConfigValuesFromBitmap(bufferedImage, Configuration.create());
-		DataOutputStream dataOutputStream = FileReaderWriter.createDataOutputStream(outputFilePath);
-		System.out.println();
+
+		int inputLengthBytes = Common.getEncodedDataLengthFromImage(bufferedImage, configuration);
+		int inputLengthBits = inputLengthBytes * 8;
+		long readBits = 0;
+		byte rMask = configuration.getRMask();
+		byte gMask = configuration.getGMask();
+		byte bMask = configuration.getBMask();
+
+		List<Boolean> outputBits = new ArrayList<Boolean>();
+		bigLoop: for (int y = 0; y < bufferedImage.getHeight(); y++)
+			for (int x = 0; x < bufferedImage.getWidth(); x++) {
+				if (y == 0 && x > 3)
+					continue;
+
+				int rgb = bufferedImage.getRGB(x, y);
+
+				byte dataInRComponent = getBitsFromRComponent(rgb, rMask);
+				for (int r = configuration.getRBitsAmount(); r >= 0; r--)
+					outputBits.add(Common.isBitSet(dataInRComponent, r));
+				if ((readBits += configuration.getRBitsAmount()) >= inputLengthBits)
+					break bigLoop;
+
+				byte dataInGComponent = getBitsFromGComponent(rgb, gMask);
+				for (int g = configuration.getGBitsAmount(); g >= 0; g--)
+					outputBits.add(Common.isBitSet(dataInGComponent, g));
+				if ((readBits += configuration.getGBitsAmount()) >= inputLengthBits)
+					break bigLoop;
+
+				byte dataInBComponent = getBitsFromBComponent(rgb, bMask);
+				for (int b = configuration.getRBitsAmount(); b >= 0; b--)
+					outputBits.add(Common.isBitSet(dataInBComponent, b));
+				if ((readBits += configuration.getBBitsAmount()) >= inputLengthBits)
+					break bigLoop;
+			}
+		outputBits = outputBits.subList(0, inputLengthBits);
+		FileReaderWriter.saveDecodedData(outputFilePath, outputBits);
 	}
 
 	public static Configuration loadConfigValuesFromBitmap(BufferedImage bufferedImage, Configuration configuration) {
@@ -20,35 +55,35 @@ public class Decoder {
 	private static byte getBitsAmount(BufferedImage bufferedImage, int pixelNumber) {
 		byte bits = 0;
 
-		bits += getBitsFromRComponent(bufferedImage, pixelNumber);
+		bits += getBitsFromRComponent(bufferedImage.getRGB(pixelNumber, 0), (byte) 3);// 011
 		bits = (byte) (bits << 3);
-		bits += getBitsFromGComponent(bufferedImage, pixelNumber);
+		bits += getBitsFromGComponent(bufferedImage.getRGB(pixelNumber, 0), (byte) 7);// 111
 		bits = (byte) (bits << 3);
-		bits += getBitsFromBComponent(bufferedImage, pixelNumber);
+		bits += getBitsFromBComponent(bufferedImage.getRGB(pixelNumber, 0), (byte) 7);// 111
 
 		return bits;
 	}
 
-	private static byte getBitsFromRComponent(BufferedImage bufferedImage, int pixelNumber) {
-		return (byte) (0b00000011 & getByteFromRGB(bufferedImage, 'R', pixelNumber));
+	private static byte getBitsFromRComponent(int pixel, byte mask) {
+		return (byte) (mask & getByteFromRGB(pixel, 'R'));
 	}
 
-	private static byte getBitsFromGComponent(BufferedImage bufferedImage, int pixelNumber) {
-		return (byte) (0b00000111 & getByteFromRGB(bufferedImage, 'G', pixelNumber));
+	private static byte getBitsFromGComponent(int pixel, byte mask) {
+		return (byte) (mask & getByteFromRGB(pixel, 'G'));
 	}
 
-	private static byte getBitsFromBComponent(BufferedImage bufferedImage, int pixelNumber) {
-		return (byte) (0b00000111 & getByteFromRGB(bufferedImage, 'B', pixelNumber));
+	private static byte getBitsFromBComponent(int pixel, byte mask) {
+		return (byte) (mask & getByteFromRGB(pixel, 'B'));
 	}
 
-	private static byte getByteFromRGB(BufferedImage bufferedImage, char component, int pixelNumber) {
+	private static byte getByteFromRGB(int pixel, char component) {
 		switch (component) {
 		case 'R':
-			return Common.intToByteArray(bufferedImage.getRGB(pixelNumber, 0))[1];
+			return Common.intToByteArray(pixel)[1];
 		case 'G':
-			return Common.intToByteArray(bufferedImage.getRGB(pixelNumber, 0))[2];
+			return Common.intToByteArray(pixel)[2];
 		case 'B':
-			return Common.intToByteArray(bufferedImage.getRGB(pixelNumber, 0))[3];
+			return Common.intToByteArray(pixel)[3];
 		default:
 			throw new RuntimeException("Invalid component name");
 		}
