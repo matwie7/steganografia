@@ -11,10 +11,16 @@ public class Encoder {
 	public static void encode(final String bitmapFilePath, final String inputFilePath, Configuration configuration) {
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(bitmapFilePath);
 		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(inputFilePath);
-
+try {
+	Thread.sleep(1000);
+} catch (InterruptedException e1) {
+	// TODO Auto-generated catch block
+	e1.printStackTrace();
+}
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
 		int inputFileLength = (int) Checkers.getSizeOfInputFileInBytes(inputFilePath);
+		System.out.print(inputFileLength + "/");
 		byte[] inputArray = new byte[inputFileLength];
 
 		try {
@@ -55,8 +61,9 @@ public class Encoder {
 				bufferedImage.setRGB(x, y, rgb);
 			}
 		}
-		System.out.println(Checkers.getTotalFreeKilobytesInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
-				configuration));
+		System.out.println(Checkers.getTotalFreeBitsInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
+				configuration) / 8 + " ("+ ((inputFileLength/(double)Checkers.getTotalFreeBitsInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
+				configuration) / 8d) * 100) +"%)");
 
 		FileReaderWriter.saveImage(bufferedImage, bitmapFilePath);
 	}

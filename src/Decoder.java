@@ -7,40 +7,48 @@ public class Decoder {
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(inputFilePath);
 		Configuration configuration = loadConfigValuesFromBitmap(bufferedImage, Configuration.create());
 
-		int inputLengthBytes = Common.getEncodedDataLengthFromImage(bufferedImage, configuration);
-		int inputLengthBits = inputLengthBytes * 8;
+		// int inputLengthBytes =
+		// Common.getEncodedDataLengthFromImage(bufferedImage, configuration);
+		// int inputLengthBits = inputLengthBytes * 8;
 		long readBits = 0;
 		byte rMask = configuration.getRMask();
 		byte gMask = configuration.getGMask();
 		byte bMask = configuration.getBMask();
 
 		List<Boolean> outputBits = new ArrayList<Boolean>();
+		int inputLengthBits = 80;
+		int additionalDataSize = 40;
 		bigLoop: for (int y = 0; y < bufferedImage.getHeight(); y++)
 			for (int x = 0; x < bufferedImage.getWidth(); x++) {
-				if (y == 0 && x > 3)
+				if (y == 0 && x <= 3)
 					continue;
 
+				if (readBits >= Integer.SIZE){
+					inputLengthBits = Common.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
+					additionalDataSize = configuration.getAdditionalDataSize() * 8;
+				}
 				int rgb = bufferedImage.getRGB(x, y);
 
 				byte dataInRComponent = getBitsFromRComponent(rgb, rMask);
-				for (int r = configuration.getRBitsAmount(); r >= 0; r--)
+				for (int r = configuration.getRBitsAmount() - 1; r >= 0; r--)
 					outputBits.add(Common.isBitSet(dataInRComponent, r));
-				if ((readBits += configuration.getRBitsAmount()) >= inputLengthBits)
+				if ((readBits += configuration.getRBitsAmount()) >= inputLengthBits + additionalDataSize)
 					break bigLoop;
 
 				byte dataInGComponent = getBitsFromGComponent(rgb, gMask);
-				for (int g = configuration.getGBitsAmount(); g >= 0; g--)
+				for (int g = configuration.getGBitsAmount() - 1; g >= 0; g--)
 					outputBits.add(Common.isBitSet(dataInGComponent, g));
-				if ((readBits += configuration.getGBitsAmount()) >= inputLengthBits)
+				if ((readBits += configuration.getGBitsAmount()) >= inputLengthBits + additionalDataSize)
 					break bigLoop;
 
 				byte dataInBComponent = getBitsFromBComponent(rgb, bMask);
-				for (int b = configuration.getRBitsAmount(); b >= 0; b--)
+				for (int b = configuration.getBBitsAmount() - 1; b >= 0; b--)
 					outputBits.add(Common.isBitSet(dataInBComponent, b));
-				if ((readBits += configuration.getBBitsAmount()) >= inputLengthBits)
+				if ((readBits += configuration.getBBitsAmount()) >= inputLengthBits + additionalDataSize)
 					break bigLoop;
 			}
-		outputBits = outputBits.subList(0, inputLengthBits);
+
+		outputBits = outputBits.subList(additionalDataSize, inputLengthBits + additionalDataSize);
 		FileReaderWriter.saveDecodedData(outputFilePath, outputBits);
 	}
 

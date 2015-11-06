@@ -42,8 +42,8 @@ public class Tests {
 
 	@Test
 	public void listToArrayTest() {
-		ArrayList<Boolean> bools = new ArrayList<>(Arrays.asList(true, true, false, true, false, true, false, true));
-		byte[] expectedBits = new byte[] { -43 };
+		ArrayList<Boolean> bools = new ArrayList<>(Arrays.asList(true, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true));
+		byte[] expectedBits = new byte[] { -43, 85 };
 		byte[] bits = Common.toByteArray(bools);
 		
 		Assert.assertArrayEquals(expectedBits, bits);

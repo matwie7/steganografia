@@ -72,22 +72,18 @@ public class Configuration {
 	}
 
 	public byte getRMask() {
-		return getMask(rBitsAmount);
+		return Common.getMask(rBitsAmount);
 	}
 
 	public byte getGMask() {
-		return getMask(gBitsAmount);
+		return Common.getMask(gBitsAmount);
 	}
 
 	public byte getBMask() {
-		return getMask(bBitsAmount);
+		return Common.getMask(bBitsAmount);
 	}
 
-	private static byte getMask(byte n) {
-		byte mask = 0;
-		for (int i = 0; i < n; i++)
-			mask += Math.pow(2, i);
-
-		return mask;
+	public int getAdditionalDataSize() {
+		return 4;
 	}
 }

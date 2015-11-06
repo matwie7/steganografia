@@ -1,4 +1,3 @@
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -34,47 +33,6 @@ public class Common {
 
 		return validInput;
 	}
-
-	public static int getEncodedDataLengthFromImage(BufferedImage bufferedImage, Configuration configuration) {
-		String lengthBinary = "";
-		int bits = 0;
-		outterLoop: for (int y = 0; y < bufferedImage.getHeight(); y++)
-			for (int x = 0; x < bufferedImage.getWidth(); x++) {
-				if (x <= 3 && y == 0)
-					continue;
-
-				int rgb = bufferedImage.getRGB(x, y);
-				byte[] rgbArray = Common.intToByteArray(rgb);
-
-				byte mask = 0;
-				for (int i = 0; i < configuration.getRBitsAmount(); i++) {
-					mask += Math.pow(2, i);
-					bits++;
-				}
-				byte r = (byte) (rgbArray[1] & mask);
-				lengthBinary += Integer.toBinaryString(r);
-
-				mask = 0;
-				for (int i = 0; i < configuration.getGBitsAmount(); i++) {
-					mask += Math.pow(2, i);
-					bits++;
-				}
-				byte g = (byte) (rgbArray[2] & mask);
-				lengthBinary += Integer.toBinaryString(g);
-
-				mask = 0;
-				for (int i = 0; i < configuration.getBBitsAmount(); i++) {
-					mask += Math.pow(2, i);
-					bits++;
-				}
-				byte b = (byte) (rgbArray[3] & mask);
-				lengthBinary += Integer.toBinaryString(b);
-
-				if (bits >= Integer.SIZE)
-					break outterLoop;
-			}
-		return Integer.parseInt(lengthBinary.substring(0, lengthBinary.length() - (bits - Integer.SIZE)), 2);
-	}
 	
 	public static boolean isBitSet(byte number, int bitIndex){
 		return (number & (1 << bitIndex)) != 0;
@@ -83,13 +41,19 @@ public class Common {
 	public static byte[] toByteArray(List<Boolean> bools) {
 		byte[] bits = new byte[bools.size() / 8];
 	    
-		for(int i = 0; i < bools.size() / 8; i++){
+		for(int i = 0; i < bools.size() / 8; i++)
 			for(int j = 0; j < 8; j++){
 				bits[i] = (byte)(bits[i] << 1);
 				bits[i] = (byte)(bits[i] | (bools.get((i * 8) + j) ? 1 : 0));
 			} 
-		}
-		
 	    return bits;
+	}
+	
+	public static byte getMask(byte n) {
+		byte mask = 0;
+		for (int i = 0; i < n; i++)
+			mask += Math.pow(2, i);
+
+		return mask;
 	}
 }
