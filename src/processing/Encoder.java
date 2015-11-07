@@ -1,3 +1,4 @@
+package processing;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,8 +9,9 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class Encoder {
-	public static void encode(final String bitmapFilePath, final String inputFilePath, Configuration configuration) {
-		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(bitmapFilePath);
+	public static BufferedImage encode(Configuration configuration) {
+		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(configuration.getImageFilePath());
+		String inputFilePath = configuration.getInputFilePath();
 		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(inputFilePath);
 try {
 	Thread.sleep(1000);
@@ -61,11 +63,9 @@ try {
 				bufferedImage.setRGB(x, y, rgb);
 			}
 		}
-		System.out.println(Checkers.getTotalFreeBitsInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
-				configuration) / 8 + " ("+ ((inputFileLength/(double)Checkers.getTotalFreeBitsInBitmap(FileReaderWriter.openBitmapFromFile(bitmapFilePath),
-				configuration) / 8d) * 100) +"%)");
 
-		FileReaderWriter.saveImage(bufferedImage, bitmapFilePath);
+		FileReaderWriter.saveImage(bufferedImage, configuration.getImageFilePath());
+		return bufferedImage;
 	}
 
 	private static void encodeRGBContribution(final BufferedImage bufferedImage, final Configuration configuration) {

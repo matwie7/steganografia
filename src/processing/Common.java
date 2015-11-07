@@ -1,3 +1,5 @@
+package processing;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -55,5 +57,26 @@ public class Common {
 			mask += Math.pow(2, i);
 
 		return mask;
+	}
+	
+	public static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
+	    int original_width = imgSize.width;
+	    int original_height = imgSize.height;
+	    int bound_width = boundary.width;
+	    int bound_height = boundary.height;
+	    int new_width = original_width;
+	    int new_height = original_height;
+
+	    if (original_width > bound_width) {
+	        new_width = bound_width;
+	        new_height = (new_width * original_height) / original_width;
+	    }
+
+	    if (new_height > bound_height) {
+	        new_height = bound_height;
+	        new_width = (new_height * original_width) / original_height;
+	    }
+
+	    return new Dimension(new_width, new_height);
 	}
 }

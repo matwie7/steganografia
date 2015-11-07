@@ -1,3 +1,4 @@
+package tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -7,6 +8,12 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import processing.Common;
+import processing.Configuration;
+import processing.Decoder;
+import processing.Encoder;
+import processing.FileReaderWriter;
 
 public class Tests {
 
@@ -20,9 +27,9 @@ public class Tests {
 			byte R = (byte) rand.nextInt(8);
 			byte G = (byte) rand.nextInt(8);
 			byte B = (byte) rand.nextInt(8);
-			configuration = configuration.setRBitsAmount(R).setGBitsAmount(G).setBBitsAmount(B);
+			configuration = configuration.setRBitsAmount(R).setGBitsAmount(G).setBBitsAmount(B).setImageFilePath(bitmapFilePath).setInputFilePath(inputFilePath);
 
-			Encoder.encode(bitmapFilePath, inputFilePath, configuration);
+			Encoder.encode(configuration);
 			configuration.setRBitsAmount((byte) 0).setGBitsAmount((byte) 0).setBBitsAmount((byte) 0);
 
 			configuration = Decoder.loadConfigValuesFromBitmap(

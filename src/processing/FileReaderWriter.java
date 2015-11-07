@@ -1,3 +1,4 @@
+package processing;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -21,6 +22,16 @@ public class FileReaderWriter {
 			throw new RuntimeException(MessageFormat.format("File under {0} cannot be opened", bitmapFilePath));
 		}
 	}
+	
+	public static BufferedImage openBitmapFromFile(final File file) {
+		try {
+			return ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException("This file cannot be opened.");
+		}
+	}
+
 
 	public static DataInputStream openFileToHide(final String fileToHidePath) {
 		try {

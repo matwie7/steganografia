@@ -1,9 +1,12 @@
+package processing;
 public class Configuration {
 
 	private static Configuration configuration;
 	private byte rBitsAmount;
 	private byte gBitsAmount;
 	private byte bBitsAmount;
+	private String imageFilePath;
+	private String inputFilePath;
 
 	private Configuration(byte rBitsAmount, byte gBitsAmount, byte bBitsAmount) {
 		this.rBitsAmount = rBitsAmount;
@@ -85,5 +88,23 @@ public class Configuration {
 
 	public int getAdditionalDataSize() {
 		return 4;
+	}
+
+	public String getImageFilePath() {
+		return imageFilePath;
+	}
+
+	public Configuration setImageFilePath(String imageFilePath) {
+		this.imageFilePath = imageFilePath;
+		return configuration;
+	}
+
+	public String getInputFilePath() {
+		return inputFilePath;
+	}
+
+	public Configuration setInputFilePath(String inputFilePath) {
+		this.inputFilePath = inputFilePath;
+		return configuration;
 	}
 }
