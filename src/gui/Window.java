@@ -90,8 +90,12 @@ public class Window implements ChangeListener {
 				configuration.setImageFilePath(files[0].getPath());
 				freeSpaceBitmapLabel.setText(MessageFormat.format("   {0} bytes",
 						Checkers.getTotalFreeBytesInBitmap(originalImage, configuration)));
+				try {
+					Decoder.decode(configuration, false);
+				} catch (Exception e) {
+					configuration.setIsVerificationBitCorrect((byte) 0);
+				}
 				refreshGui();
-				drawChart();
 			}
 		});
 
@@ -132,11 +136,11 @@ public class Window implements ChangeListener {
 				refreshGui();
 			}
 		});
-		
+
 		btnDecode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Decoder.decode(configuration);
+				Decoder.decode(configuration, true);
 				refreshGui();
 			}
 		});
@@ -240,5 +244,6 @@ public class Window implements ChangeListener {
 			drawEncodecImage();
 			btnShowOriginalOrEncodedImage.setText("Show original image");
 		}
+		drawChart();
 	}
 }

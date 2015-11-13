@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Decoder {
-	public static void decode(Configuration configuration) {
+	public static void decode(Configuration configuration, boolean save) {
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(configuration.getImageFilePath());
 		configuration = loadConfigValuesFromBitmap(bufferedImage, configuration);
 
@@ -23,10 +23,15 @@ public class Decoder {
 				if (y == 0 && x <= 3)
 					continue;
 
-				if (readBits >= 40) {
-					inputLengthBitsAmount = Common.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
-					extensionLengthBitsAmount = Common.toByteArray(outputBits.subList(Integer.SIZE, Integer.SIZE + Byte.SIZE))[0] * 8;
+				if (readBits > 60) {
+					inputLengthBitsAmount = Common
+							.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
+					extensionLengthBitsAmount = Common
+							.toByteArray(outputBits.subList(Integer.SIZE, Integer.SIZE + Byte.SIZE))[0] * 8;
 					additionalDataSize = (configuration.getAdditionalDataSize() * 8) + extensionLengthBitsAmount;
+					configuration.setIsVerificationBitCorrect(Common.toByteArray(outputBits.subList(Integer.SIZE + Byte.SIZE, Integer.SIZE + Byte.SIZE + extensionLengthBitsAmount))[0]);
+					if (!configuration.isVerificationBitCorrect())
+						break bigLoop;
 				}
 				int rgb = bufferedImage.getRGB(x, y);
 
@@ -49,10 +54,12 @@ public class Decoder {
 					break bigLoop;
 			}
 
-		configuration.setDecodedExtension(Common.toByteArray(outputBits.subList(Integer.SIZE + Byte.SIZE, Integer.SIZE + Byte.SIZE + extensionLengthBitsAmount)));
-		
+		configuration.setDecodedExtension(Common.toByteArray(outputBits.subList(Integer.SIZE + (2 * Byte.SIZE),
+				Integer.SIZE + (2 * Byte.SIZE) + extensionLengthBitsAmount)));
+
 		outputBits = outputBits.subList(additionalDataSize, inputLengthBitsAmount + additionalDataSize);
-		FileReaderWriter.saveDecodedData(outputBits, configuration);
+		if (save)
+			FileReaderWriter.saveDecodedData(outputBits, configuration);
 	}
 
 	public static Configuration loadConfigValuesFromBitmap(BufferedImage bufferedImage, Configuration configuration) {

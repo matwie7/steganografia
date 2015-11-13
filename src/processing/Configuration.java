@@ -11,6 +11,7 @@ public class Configuration {
 	private String imageFilePath;
 	private String inputFilePath;
 	private String decodedExtension;
+	private boolean isVerificationBitCorrect;
 
 	private Configuration(byte rBitsAmount, byte gBitsAmount, byte bBitsAmount) {
 		this.rBitsAmount = rBitsAmount;
@@ -91,7 +92,7 @@ public class Configuration {
 	}
 
 	public int getAdditionalDataSize() {
-		return 5;
+		return 6;	// 4 bytes - file length, 1 byte - file extension length, 1 byte - verification if encoded data
 	}
 
 	public String getImageFilePath() {
@@ -128,5 +129,13 @@ public class Configuration {
 			e.printStackTrace();
 		}
 		return configuration;
+	}
+
+	public boolean isVerificationBitCorrect() {
+		return isVerificationBitCorrect;
+	}
+
+	public void setIsVerificationBitCorrect(byte verificationByte) {
+		this.isVerificationBitCorrect = (verificationByte == 'U');
 	}
 }

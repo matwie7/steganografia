@@ -37,7 +37,7 @@ public class Encoder {
 		byte[] inputFileLengtInBytes = Common.intToByteArray(inputFileLength);
 
 		List<Boolean> validInput = Common.bitSetToValidListOfBoolean(BitSet.valueOf(ArrayUtils
-				.addAll(inputFileLengtInBytes, ArrayUtils.addAll(new byte[] { (byte) inputFileExtension.length() },
+				.addAll(inputFileLengtInBytes, ArrayUtils.addAll(new byte[] { (byte) inputFileExtension.length(), 'U' },
 						ArrayUtils.addAll(inputFileExtension.getBytes(), inputArray)))));
 
 		boolean finished = false;

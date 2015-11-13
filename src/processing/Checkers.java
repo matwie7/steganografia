@@ -12,9 +12,9 @@ public class Checkers {
 					configuration);
 			isEncoded = true;
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
-		return isEncoded;
+		return isEncoded && configuration.isVerificationBitCorrect();
 	}
 
 	public static int getTotalFreeBitsInBitmap(BufferedImage bufferedImage, Configuration configuration) {
