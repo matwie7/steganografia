@@ -1,4 +1,5 @@
 package processing;
+
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -9,21 +10,22 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class Encoder {
+
 	public static BufferedImage encode(Configuration configuration) {
 		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(configuration.getImageFilePath());
 		String inputFilePath = configuration.getInputFilePath();
+		String inputFileExtension = configuration.getInputFileExtension();
 		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(inputFilePath);
-try {
-	Thread.sleep(1000);
-} catch (InterruptedException e1) {
-	// TODO Auto-generated catch block
-	e1.printStackTrace();
-}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
 		int inputFileLength = (int) Checkers.getSizeOfInputFileInBytes(inputFilePath);
-		System.out.print(inputFileLength + "/");
 		byte[] inputArray = new byte[inputFileLength];
+		int counter = 0;
 
 		try {
 			dataInputStream.readFully(inputArray);
@@ -32,38 +34,41 @@ try {
 		}
 
 		encodeRGBContribution(bufferedImage, configuration);
-		// d³ugoœæ pliku wejœciowego
 		byte[] inputFileLengtInBytes = Common.intToByteArray(inputFileLength);
 
-		List<Boolean> validInput = Common
-				.bitSetToValidListOfBoolean(BitSet.valueOf(ArrayUtils.addAll(inputFileLengtInBytes, inputArray)));
-		int counter = 0;
+		List<Boolean> validInput = Common.bitSetToValidListOfBoolean(BitSet.valueOf(ArrayUtils
+				.addAll(inputFileLengtInBytes, ArrayUtils.addAll(new byte[] { (byte) inputFileExtension.length() },
+						ArrayUtils.addAll(inputFileExtension.getBytes(), inputArray)))));
 
-		outerLoop: for (int y = 0; y < height; y++) {
+		boolean finished = false;
+
+		outterLoop: for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				if (x <= 3 && y == 0)
 					continue;
 				int rgb = bufferedImage.getRGB(x, y);
 
-				for (int iR = configuration.getRBitsAmount() - 1; iR >= 0; iR--) {
+				for (int iR = configuration.getRBitsAmount() - 1; iR >= 0 && !finished; iR--) {
 					rgb = setR(rgb, iR, validInput.get(counter++));
-					if (validInput.size() == counter)
-						break outerLoop;
+					if (validInput.size() - 1 == counter)
+						finished = true;
+
 				}
-				for (int iG = configuration.getGBitsAmount() - 1; iG >= 0; iG--) {
+				for (int iG = configuration.getGBitsAmount() - 1; iG >= 0 && !finished; iG--) {
 					rgb = setG(rgb, iG, validInput.get(counter++));
-					if (validInput.size() == counter)
-						break outerLoop;
+					if (validInput.size() - 1 == counter)
+						finished = true;
 				}
-				for (int iB = configuration.getBBitsAmount() - 1; iB >= 0; iB--) {
+				for (int iB = configuration.getBBitsAmount() - 1; iB >= 0 && !finished; iB--) {
 					rgb = setB(rgb, iB, validInput.get(counter++));
-					if (validInput.size() == counter)
-						break outerLoop;
+					if (validInput.size() - 1 == counter)
+						finished = true;
 				}
 				bufferedImage.setRGB(x, y, rgb);
+				if (finished)
+					break outterLoop;
 			}
 		}
-
 		FileReaderWriter.saveImage(bufferedImage, configuration.getImageFilePath());
 		return bufferedImage;
 	}

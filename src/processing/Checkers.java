@@ -5,6 +5,18 @@ import java.io.File;
 
 public class Checkers {
 
+	public static boolean isDataEncoded(Configuration configuration) {
+		boolean isEncoded = false;
+		try {
+			Decoder.loadConfigValuesFromBitmap(FileReaderWriter.openBitmapFromFile(configuration.getImageFilePath()),
+					configuration);
+			isEncoded = true;
+		} catch (Exception e) {
+//			e.printStackTrace();
+		}
+		return isEncoded;
+	}
+
 	public static int getTotalFreeBitsInBitmap(BufferedImage bufferedImage, Configuration configuration) {
 		return bufferedImage.getHeight() * bufferedImage.getWidth() * configuration.getBitsPerPixel();
 	}

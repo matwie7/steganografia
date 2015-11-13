@@ -55,4 +55,14 @@ public class Tests {
 		
 		Assert.assertArrayEquals(expectedBits, bits);
 	}
+	
+	@Test
+	public void testExtensionCheckingMethods(){
+		final String inputFilePath = "c:\\Android\\test.txt";
+		Configuration configuration = Configuration.create();
+		configuration.setInputFilePath(inputFilePath);
+		
+		assertEquals("txt", configuration.getInputFileExtension());
+	}
+	
 }

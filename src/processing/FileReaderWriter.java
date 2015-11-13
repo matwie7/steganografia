@@ -43,7 +43,8 @@ public class FileReaderWriter {
 	}
 
 	public static void saveImage(BufferedImage bufferedImage, String bitmapFilePath) {
-		File outputfile = new File(bitmapFilePath + "2");
+		String encodedBitmapPath = bitmapFilePath.substring(0, bitmapFilePath.length() - 4) + "_endoded.bmp"; 
+		File outputfile = new File(encodedBitmapPath);
 		try {
 			ImageIO.write(bufferedImage, "bmp", outputfile);
 		} catch (IOException e) {
@@ -60,13 +61,14 @@ public class FileReaderWriter {
 		}
 	}
 	
-	public static void saveDecodedData(String outputFilePath, List<Boolean> outputDataArray){
-		DataOutputStream dataOutputStream = createDataOutputStream(outputFilePath);
+	public static void saveDecodedData(List<Boolean> outputDataArray, Configuration configuration){
+		DataOutputStream dataOutputStream = createDataOutputStream(configuration.getImageFilePath() + "." +  configuration.getDecodedExtension());
 		if (outputDataArray.size() % 8 != 0)
 			throw new RuntimeException("Wrong data length");
-		
 		try {
 			dataOutputStream.write(Common.toByteArray(outputDataArray));
+			dataOutputStream.flush();
+			dataOutputStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

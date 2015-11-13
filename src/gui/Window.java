@@ -31,6 +31,7 @@ import net.iharder.dnd.FileDrop;
 import processing.Checkers;
 import processing.Common;
 import processing.Configuration;
+import processing.Decoder;
 import processing.Encoder;
 import processing.FileReaderWriter;
 
@@ -48,8 +49,8 @@ public class Window implements ChangeListener {
 	private BufferedImage originalImage = null;
 	private BufferedImage encodedImage = null;
 	private boolean drawOriginalImage = true;
-	List<JSlider> sliders = new ArrayList<>(Arrays.asList(new JSlider(), new JSlider(), new JSlider()));
-	List<JLabel> labels = new ArrayList<>(Arrays.asList(new JLabel("Bits encoded on each px component:   R: "),
+	private List<JSlider> sliders = new ArrayList<>(Arrays.asList(new JSlider(), new JSlider(), new JSlider()));
+	private List<JLabel> labels = new ArrayList<>(Arrays.asList(new JLabel("Bits encoded on each px component:   R: "),
 			new JLabel("        G: "), new JLabel("        B: ")));
 	private Configuration configuration;
 
@@ -131,6 +132,14 @@ public class Window implements ChangeListener {
 				refreshGui();
 			}
 		});
+		
+		btnDecode.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Decoder.decode(configuration);
+				refreshGui();
+			}
+		});
 
 		btnShowOriginalOrEncodedImage.addActionListener(new ActionListener() {
 			@Override
@@ -160,6 +169,7 @@ public class Window implements ChangeListener {
 		frame.pack();
 		frame.setVisible(true);
 		frame.setSize(1000, 600);
+		frame.setMinimumSize(new Dimension(960, 500));
 		refreshGui();
 	}
 
@@ -211,6 +221,11 @@ public class Window implements ChangeListener {
 		} else {
 			btnShowOriginalOrEncodedImage.setEnabled(true);
 		}
+		if (originalImage != null && Checkers.isDataEncoded(configuration)) {
+			btnDecode.setEnabled(true);
+		} else {
+			btnDecode.setEnabled(false);
+		}
 
 		if (originalImage == null) {
 			btnEncode.setEnabled(false);
@@ -225,6 +240,5 @@ public class Window implements ChangeListener {
 			drawEncodecImage();
 			btnShowOriginalOrEncodedImage.setText("Show original image");
 		}
-		btnDecode.setEnabled(false);
 	}
 }

@@ -1,56 +1,58 @@
 package processing;
+
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Decoder {
-	public static void decode(final String inputFilePath, final String outputFilePath) {
-		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(inputFilePath);
-		Configuration configuration = loadConfigValuesFromBitmap(bufferedImage, Configuration.create());
+	public static void decode(Configuration configuration) {
+		BufferedImage bufferedImage = FileReaderWriter.openBitmapFromFile(configuration.getImageFilePath());
+		configuration = loadConfigValuesFromBitmap(bufferedImage, configuration);
 
-		// int inputLengthBytes =
-		// Common.getEncodedDataLengthFromImage(bufferedImage, configuration);
-		// int inputLengthBits = inputLengthBytes * 8;
 		long readBits = 0;
 		byte rMask = configuration.getRMask();
 		byte gMask = configuration.getGMask();
 		byte bMask = configuration.getBMask();
 
 		List<Boolean> outputBits = new ArrayList<Boolean>();
-		int inputLengthBits = 80;
+		int inputLengthBitsAmount = 80;
+		int extensionLengthBitsAmount = 24;
 		int additionalDataSize = 40;
 		bigLoop: for (int y = 0; y < bufferedImage.getHeight(); y++)
 			for (int x = 0; x < bufferedImage.getWidth(); x++) {
 				if (y == 0 && x <= 3)
 					continue;
 
-				if (readBits >= Integer.SIZE){
-					inputLengthBits = Common.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
-					additionalDataSize = configuration.getAdditionalDataSize() * 8;
+				if (readBits >= 40) {
+					inputLengthBitsAmount = Common.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
+					extensionLengthBitsAmount = Common.toByteArray(outputBits.subList(Integer.SIZE, Integer.SIZE + Byte.SIZE))[0] * 8;
+					additionalDataSize = (configuration.getAdditionalDataSize() * 8) + extensionLengthBitsAmount;
 				}
 				int rgb = bufferedImage.getRGB(x, y);
 
 				byte dataInRComponent = getBitsFromRComponent(rgb, rMask);
 				for (int r = configuration.getRBitsAmount() - 1; r >= 0; r--)
 					outputBits.add(Common.isBitSet(dataInRComponent, r));
-				if ((readBits += configuration.getRBitsAmount()) >= inputLengthBits + additionalDataSize)
+				if ((readBits += configuration.getRBitsAmount()) >= inputLengthBitsAmount + additionalDataSize)
 					break bigLoop;
 
 				byte dataInGComponent = getBitsFromGComponent(rgb, gMask);
 				for (int g = configuration.getGBitsAmount() - 1; g >= 0; g--)
 					outputBits.add(Common.isBitSet(dataInGComponent, g));
-				if ((readBits += configuration.getGBitsAmount()) >= inputLengthBits + additionalDataSize)
+				if ((readBits += configuration.getGBitsAmount()) >= inputLengthBitsAmount + additionalDataSize)
 					break bigLoop;
 
 				byte dataInBComponent = getBitsFromBComponent(rgb, bMask);
 				for (int b = configuration.getBBitsAmount() - 1; b >= 0; b--)
 					outputBits.add(Common.isBitSet(dataInBComponent, b));
-				if ((readBits += configuration.getBBitsAmount()) >= inputLengthBits + additionalDataSize)
+				if ((readBits += configuration.getBBitsAmount()) >= inputLengthBitsAmount + additionalDataSize)
 					break bigLoop;
 			}
 
-		outputBits = outputBits.subList(additionalDataSize, inputLengthBits + additionalDataSize);
-		FileReaderWriter.saveDecodedData(outputFilePath, outputBits);
+		configuration.setDecodedExtension(Common.toByteArray(outputBits.subList(Integer.SIZE + Byte.SIZE, Integer.SIZE + Byte.SIZE + extensionLengthBitsAmount)));
+		
+		outputBits = outputBits.subList(additionalDataSize, inputLengthBitsAmount + additionalDataSize);
+		FileReaderWriter.saveDecodedData(outputBits, configuration);
 	}
 
 	public static Configuration loadConfigValuesFromBitmap(BufferedImage bufferedImage, Configuration configuration) {
@@ -70,7 +72,10 @@ public class Decoder {
 		bits = (byte) (bits << 3);
 		bits += getBitsFromBComponent(bufferedImage.getRGB(pixelNumber, 0), (byte) 7);// 111
 
-		return bits;
+		if (bits >= 0 && bits < 9)
+			return bits;
+		else
+			throw new RuntimeException();
 	}
 
 	private static byte getBitsFromRComponent(int pixel, byte mask) {

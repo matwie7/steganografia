@@ -1,4 +1,7 @@
 package processing;
+
+import java.io.UnsupportedEncodingException;
+
 public class Configuration {
 
 	private static Configuration configuration;
@@ -7,6 +10,7 @@ public class Configuration {
 	private byte bBitsAmount;
 	private String imageFilePath;
 	private String inputFilePath;
+	private String decodedExtension;
 
 	private Configuration(byte rBitsAmount, byte gBitsAmount, byte bBitsAmount) {
 		this.rBitsAmount = rBitsAmount;
@@ -87,7 +91,7 @@ public class Configuration {
 	}
 
 	public int getAdditionalDataSize() {
-		return 4;
+		return 5;
 	}
 
 	public String getImageFilePath() {
@@ -105,6 +109,24 @@ public class Configuration {
 
 	public Configuration setInputFilePath(String inputFilePath) {
 		this.inputFilePath = inputFilePath;
+		return configuration;
+	}
+
+	public String getInputFileExtension() {
+		String[] dotSplittedPath = inputFilePath.split("\\.");
+		return dotSplittedPath[dotSplittedPath.length - 1];
+	}
+
+	public String getDecodedExtension() {
+		return decodedExtension;
+	}
+
+	public Configuration setDecodedExtension(byte[] decodedExtension) {
+		try {
+			this.decodedExtension = new String(decodedExtension, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		return configuration;
 	}
 }
