@@ -43,6 +43,7 @@ public class Window implements ChangeListener {
 	private JLabel inputFilePathLabel = new JLabel();
 	private JLabel inputFileSizeLabel = new JLabel();
 	private JLabel freeSpaceBitmapLabel = new JLabel();
+	private JLabel leftFreeSpace = new JLabel();
 	private JButton btnEncode = new JButton("Encode");
 	private JButton btnDecode = new JButton("Decode");
 	private JButton btnShowOriginalOrEncodedImage = new JButton("Show encoded image");
@@ -124,6 +125,8 @@ public class Window implements ChangeListener {
 		leftConfigPanel.add(inputFileSizeLabel);
 		leftConfigPanel.add(new JLabel(" Free space in bitmap: "));
 		leftConfigPanel.add(freeSpaceBitmapLabel);
+		leftConfigPanel.add(new JLabel(" Free space left after encoding:"));
+		leftConfigPanel.add(leftFreeSpace);
 		leftConfigPanel.add(chartPanel);
 		leftConfigPanel.add(btnShowOriginalOrEncodedImage);
 		leftConfigPanel.add(btnEncode);
@@ -198,6 +201,7 @@ public class Window implements ChangeListener {
 		chartPanelGraphics.fillRect(0, 0, width, chartPanel.getHeight());
 		chartPanelGraphics.setColor(Color.RED);
 		chartPanelGraphics.fillRect(width + 1, 0, chartPanel.getWidth() - width, chartPanel.getHeight());
+		leftFreeSpace.setText(MessageFormat.format("   {0} bytes", Checkers.getTotalFreeBytesInBitmap(originalImage, configuration) - Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath())));
 	}
 
 	private void drawOriginalImage() {
