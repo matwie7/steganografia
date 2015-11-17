@@ -2,6 +2,7 @@ package processing;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.security.InvalidParameterException;
 
 public class Checkers {
 
@@ -12,7 +13,6 @@ public class Checkers {
 					configuration);
 			isEncoded = true;
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return isEncoded && configuration.isVerificationBitCorrect();
 	}
@@ -21,7 +21,7 @@ public class Checkers {
 		return bufferedImage.getHeight() * bufferedImage.getWidth() * configuration.getBitsPerPixel();
 	}
 
-	public static float getTotalFreeBytesInBitmap(BufferedImage bufferedImage, Configuration configuration) {
+	public static int getTotalFreeBytesInBitmap(BufferedImage bufferedImage, Configuration configuration) {
 		return getTotalFreeBitsInBitmap(bufferedImage, configuration) / 8;
 	}
 
@@ -30,11 +30,14 @@ public class Checkers {
 				configuration) / 8;
 	}
 
-	public static long getSizeOfInputFileInBytes(String inputFilePath) {
-		if (!inputFilePath.equals("") && inputFilePath != null)
-			return new File(inputFilePath).length();
-		else
+	public static int getSizeOfInputFileInBytes(String inputFilePath) {
+		if (inputFilePath == null)
 			return 0;
+		try {
+			return (int) new File(inputFilePath).length();
+		} catch (InvalidParameterException e) {
+			return 0;
+		}
 	}
 
 	public boolean isPossibleToHideInputFileInBitmap(BufferedImage bufferedImage, String inputFilePath,

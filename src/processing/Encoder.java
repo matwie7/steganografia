@@ -16,11 +16,7 @@ public class Encoder {
 		String inputFilePath = configuration.getInputFilePath();
 		String inputFileExtension = configuration.getInputFileExtension();
 		DataInputStream dataInputStream = FileReaderWriter.openFileToHide(inputFilePath);
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+		Common.sleep(1000);
 		int width = bufferedImage.getWidth();
 		int height = bufferedImage.getHeight();
 		int inputFileLength = (int) Checkers.getSizeOfInputFileInBytes(inputFilePath);
@@ -42,7 +38,8 @@ public class Encoder {
 
 		boolean finished = false;
 
-		outterLoop: for (int y = 0; y < height; y++) {
+		outterLoop: 
+		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				if (x <= 3 && y == 0)
 					continue;
@@ -52,7 +49,6 @@ public class Encoder {
 					rgb = setR(rgb, iR, validInput.get(counter++));
 					if (validInput.size() - 1 == counter)
 						finished = true;
-
 				}
 				for (int iG = configuration.getGBitsAmount() - 1; iG >= 0 && !finished; iG--) {
 					rgb = setG(rgb, iG, validInput.get(counter++));

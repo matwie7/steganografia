@@ -1,12 +1,12 @@
 package tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import processing.Common;
@@ -32,8 +32,9 @@ public class Tests {
 			Encoder.encode(configuration);
 			configuration.setRBitsAmount((byte) 0).setGBitsAmount((byte) 0).setBBitsAmount((byte) 0);
 
+			String encodedBitmapPath = bitmapFilePath.substring(0, bitmapFilePath.length() - 4) + "_encoded.bmp";
 			configuration = Decoder.loadConfigValuesFromBitmap(
-					FileReaderWriter.openBitmapFromFile(bitmapFilePath + "2"), configuration);
+					FileReaderWriter.openBitmapFromFile(encodedBitmapPath), configuration);
 			assertEquals(R, configuration.getRBitsAmount());
 			assertEquals(G, configuration.getGBitsAmount());
 			assertEquals(B, configuration.getBBitsAmount());
@@ -53,7 +54,7 @@ public class Tests {
 		byte[] expectedBits = new byte[] { -43, 85 };
 		byte[] bits = Common.toByteArray(bools);
 		
-		Assert.assertArrayEquals(expectedBits, bits);
+		assertArrayEquals(expectedBits, bits);
 	}
 	
 	@Test

@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -43,7 +44,7 @@ public class Window implements ChangeListener {
 	private JLabel inputFilePathLabel = new JLabel();
 	private JLabel inputFileSizeLabel = new JLabel();
 	private JLabel freeSpaceBitmapLabel = new JLabel();
-	private JLabel leftFreeSpace = new JLabel();
+	private JLabel leftFreeSpaceLabel = new JLabel();
 	private JButton btnEncode = new JButton("Encode");
 	private JButton btnDecode = new JButton("Decode");
 	private JButton btnShowOriginalOrEncodedImage = new JButton("Show encoded image");
@@ -84,22 +85,6 @@ public class Window implements ChangeListener {
 		mainPanel.setBackground(Color.LIGHT_GRAY);
 		frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 
-		new FileDrop(frame, new FileDrop.Listener() {
-			public void filesDropped(File[] files) {
-				originalImage = FileReaderWriter.openBitmapFromFile(files[0]);
-				encodedImage = null;
-				configuration.setImageFilePath(files[0].getPath());
-				freeSpaceBitmapLabel.setText(MessageFormat.format("   {0} bytes",
-						Checkers.getTotalFreeBytesInBitmap(originalImage, configuration)));
-				try {
-					Decoder.decode(configuration, false);
-				} catch (Exception e) {
-					configuration.setIsVerificationBitCorrect((byte) 0);
-				}
-				refreshGui();
-			}
-		});
-
 		mainPanel.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent evt) {
 				if (drawOriginalImage)
@@ -121,12 +106,12 @@ public class Window implements ChangeListener {
 		leftConfigPanel.add(inputFilePathLabel);
 		leftConfigPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		leftConfigPanel.add(new JLabel(" Input file size: "));
-		leftConfigPanel.add(inputFileSizeLabel);
 		leftConfigPanel.add(new JLabel(" Free space in bitmap: "));
 		leftConfigPanel.add(freeSpaceBitmapLabel);
+		leftConfigPanel.add(new JLabel(" Input file size: "));
+		leftConfigPanel.add(inputFileSizeLabel);
 		leftConfigPanel.add(new JLabel(" Free space left after encoding:"));
-		leftConfigPanel.add(leftFreeSpace);
+		leftConfigPanel.add(leftFreeSpaceLabel);
 		leftConfigPanel.add(chartPanel);
 		leftConfigPanel.add(btnShowOriginalOrEncodedImage);
 		leftConfigPanel.add(btnEncode);
@@ -135,8 +120,21 @@ public class Window implements ChangeListener {
 		btnEncode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath()) == 0) {
+					JOptionPane.showMessageDialog(null, "There is no data to encode!", "No data to encode!",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				} else if (Checkers.getTotalFreeBytesInBitmap(originalImage, configuration)
+						- Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath()) < 10) {
+					JOptionPane.showMessageDialog(null, "Data size extends free space in bitmap!", "Too much data!",
+							JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+
 				encodedImage = Encoder.encode(configuration);
 				refreshGui();
+				JOptionPane.showMessageDialog(null, "Data successfully encoded!", "Encoding successful!",
+						JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 
@@ -156,6 +154,24 @@ public class Window implements ChangeListener {
 			}
 		});
 
+		new FileDrop(frame, new FileDrop.Listener() {
+			public void filesDropped(File[] files) {
+				originalImage = FileReaderWriter.openBitmapFromFile(files[0]);
+				encodedImage = null;
+				configuration.setImageFilePath(files[0].getPath());
+				try {
+					Decoder.decode(configuration, false);
+					JOptionPane.showMessageDialog(null,
+							"In this image file already exists encoded data. You can now decode it. File will be saved in image's origin folder.",
+							"File with encoded data", JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception e) {
+					configuration.setIsVerificationBitCorrect((byte) 0);
+				}
+				cleanImagePanel();
+				refreshGui();
+			}
+		});
+
 		new FileDrop(leftConfigPanel, new FileDrop.Listener() {
 			public void filesDropped(File[] files) {
 				String path = files[0].getPath();
@@ -167,9 +183,7 @@ public class Window implements ChangeListener {
 					printedPath = path.substring(path.length() - 30, path.length());
 
 				inputFilePathLabel.setText(MessageFormat.format("   {0}", printedPath));
-				inputFileSizeLabel
-						.setText(MessageFormat.format("   {0} bytes", Checkers.getSizeOfInputFileInBytes(path)));
-				drawChart();
+				refreshGui();
 			}
 		});
 
@@ -184,15 +198,11 @@ public class Window implements ChangeListener {
 	public void stateChanged(ChangeEvent arg0) {
 		configuration.setRBitsAmount((byte) sliders.get(0).getValue()).setGBitsAmount((byte) sliders.get(1).getValue())
 				.setBBitsAmount((byte) sliders.get(2).getValue());
-		if (originalImage != null)
-			freeSpaceBitmapLabel.setText(MessageFormat.format("   {0} bytes",
-					Checkers.getTotalFreeBytesInBitmap(originalImage, configuration)));
-		drawChart();
+		refreshGui();
 	}
 
 	private void drawChart() {
-		if (originalImage == null || configuration.getInputFilePath() == null
-				|| configuration.getInputFilePath().equals(""))
+		if (originalImage == null)
 			return;
 		int width = (int) (chartPanel.getWidth()
 				* ((float) Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath())
@@ -201,7 +211,6 @@ public class Window implements ChangeListener {
 		chartPanelGraphics.fillRect(0, 0, width, chartPanel.getHeight());
 		chartPanelGraphics.setColor(Color.RED);
 		chartPanelGraphics.fillRect(width + 1, 0, chartPanel.getWidth() - width, chartPanel.getHeight());
-		leftFreeSpace.setText(MessageFormat.format("   {0} bytes", Checkers.getTotalFreeBytesInBitmap(originalImage, configuration) - Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath())));
 	}
 
 	private void drawOriginalImage() {
@@ -248,6 +257,26 @@ public class Window implements ChangeListener {
 			drawEncodecImage();
 			btnShowOriginalOrEncodedImage.setText("Show original image");
 		}
+		updateInfoLabels();
 		drawChart();
+	}
+
+	private void updateInfoLabels() {
+		int inputFileSize = Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath());
+		int freeSpaceInBitmap = Checkers.getTotalFreeBytesInBitmap(originalImage, configuration);
+		int leftFreeSpace = freeSpaceInBitmap - inputFileSize;
+		String infoLabelPattern = "   {0} bytes ({1}%)";
+
+		inputFileSizeLabel.setText(MessageFormat.format(infoLabelPattern, inputFileSize,
+				(inputFileSize / (float) freeSpaceInBitmap) * 100));
+		leftFreeSpaceLabel.setText(MessageFormat.format(infoLabelPattern, leftFreeSpace,
+				(leftFreeSpace / (float) freeSpaceInBitmap) * 100));
+		freeSpaceBitmapLabel.setText(MessageFormat.format("   {0} bytes", freeSpaceInBitmap));
+	}
+
+	private void cleanImagePanel() {
+		Graphics2D mainPanelGraphics = (Graphics2D) mainPanel.getGraphics();
+		mainPanelGraphics.setColor(Color.LIGHT_GRAY);
+		mainPanelGraphics.fillRect(0, 0, mainPanel.getWidth(), mainPanel.getHeight());
 	}
 }

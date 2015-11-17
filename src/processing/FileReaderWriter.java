@@ -32,7 +32,6 @@ public class FileReaderWriter {
 		}
 	}
 
-
 	public static DataInputStream openFileToHide(final String fileToHidePath) {
 		try {
 			return new DataInputStream(new BufferedInputStream(new FileInputStream(new File(fileToHidePath))));
@@ -43,10 +42,11 @@ public class FileReaderWriter {
 	}
 
 	public static void saveImage(BufferedImage bufferedImage, String bitmapFilePath) {
-		String encodedBitmapPath = bitmapFilePath.substring(0, bitmapFilePath.length() - 4) + "_endoded.bmp"; 
+		String encodedBitmapPath = bitmapFilePath.substring(0, bitmapFilePath.length() - 4) + "_encoded.bmp"; 
 		File outputfile = new File(encodedBitmapPath);
 		try {
 			ImageIO.write(bufferedImage, "bmp", outputfile);
+			Common.sleep(2000);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

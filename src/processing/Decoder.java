@@ -18,21 +18,26 @@ public class Decoder {
 		int inputLengthBitsAmount = 80;
 		int extensionLengthBitsAmount = 24;
 		int additionalDataSize = 40;
-		bigLoop: for (int y = 0; y < bufferedImage.getHeight(); y++)
+		bigLoop:
+		for (int y = 0; y < bufferedImage.getHeight(); y++)
 			for (int x = 0; x < bufferedImage.getWidth(); x++) {
 				if (y == 0 && x <= 3)
 					continue;
 
-				if (readBits > 60) {
+				if (readBits > 40){
 					inputLengthBitsAmount = Common
 							.byteArrayToInt(Common.toByteArray(outputBits.subList(0, Integer.SIZE))) * 8;
 					extensionLengthBitsAmount = Common
 							.toByteArray(outputBits.subList(Integer.SIZE, Integer.SIZE + Byte.SIZE))[0] * 8;
 					additionalDataSize = (configuration.getAdditionalDataSize() * 8) + extensionLengthBitsAmount;
+				}
+				
+				if (readBits > additionalDataSize) {
 					configuration.setIsVerificationBitCorrect(Common.toByteArray(outputBits.subList(Integer.SIZE + Byte.SIZE, Integer.SIZE + Byte.SIZE + extensionLengthBitsAmount))[0]);
 					if (!configuration.isVerificationBitCorrect())
 						break bigLoop;
 				}
+				
 				int rgb = bufferedImage.getRGB(x, y);
 
 				byte dataInRComponent = getBitsFromRComponent(rgb, rMask);
