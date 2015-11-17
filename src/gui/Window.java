@@ -162,8 +162,8 @@ public class Window implements ChangeListener {
 				try {
 					Decoder.decode(configuration, false);
 					JOptionPane.showMessageDialog(null,
-							"In this image file already exists encoded data. You can now decode it. File will be saved in image's origin folder.",
-							"File with encoded data", JOptionPane.INFORMATION_MESSAGE);
+							"This image already contain an encoded data. You can now decode it and it will be saved in the image origin folder.",
+							"Data already encoded in this file.", JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e) {
 					configuration.setIsVerificationBitCorrect((byte) 0);
 				}
