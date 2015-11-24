@@ -126,7 +126,7 @@ public class Window implements ChangeListener {
 					return;
 				} else if (Checkers.getTotalFreeBytesInBitmap(originalImage, configuration)
 						- Checkers.getSizeOfInputFileInBytes(configuration.getInputFilePath()) < 10) {
-					JOptionPane.showMessageDialog(null, "Data size extends free space in bitmap!", "Too much data!",
+					JOptionPane.showMessageDialog(null, "Data size exeeds free space in bitmap!", "Too much data!",
 							JOptionPane.WARNING_MESSAGE);
 					return;
 				}
